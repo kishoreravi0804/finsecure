@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run Finsecure (Spring Boot)",
+      "request": "launch",
+      "mainClass": "com.project.finsecure.FinsecureApplication",
+      "projectName": "finsecure",
+      "env": {
+        "DB_URL": "jdbc:postgresql://localhost:5432/finsecure",
+        "DB_USERNAME": "postgres",
+        "DB_PASSWORD": "admin",
+        "JWT_SECRET": "finsecure_secret_key_12345678901234567890abcd",
+        "JWT_EXPIRATION": "3600000"
+      }
+    }
+  ]
+}
