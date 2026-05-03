@@ -2,49 +2,34 @@ version: 0.2
 
 env:
   variables:
-    REPOSITORY_URI: 974263621300.dkr.ecr.ap-south-1.amazonaws.com/finsecure
+    REPOSITORY_URI: "974263621300.dkr.ecr.ap-south-1.amazonaws.com/finsecure"
 
 phases:
   pre_build:
     commands:
-      - echo Build started
-      - cd finsecure
-
-      - chmod +x mvnw
-      - ./mvnw clean package -DskipTests
-
       - echo Logging in to Amazon ECR...
-      - aws --version
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 974263621300.dkr.ecr.ap-south-1.amazonaws.com
-
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
 
   build:
     commands:
       - echo Build started on `date`
+      - cd finsecure
+      - chmod +x mvnw
+      - ./mvnw clean package -DskipTests
+      
       - echo Building Docker image...
-
-      # DEBUG (VERY IMPORTANT)
-      - pwd
-      - ls -l
-
-      # Build image with simple name
-      - docker build -t finsecure .
-
-      # Check image exists
-      - docker images
-
-      # Tag for ECR
-      - docker tag finsecure:latest $REPOSITORY_URI:latest
-      - docker tag finsecure:latest $REPOSITORY_URI:$IMAGE_TAG
-
-      # Verify again
-      - docker images
+      # Build and tag in one go to ensure the local daemon registers it correctly
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
       - echo Pushing Docker images...
-      - docker images   # DEBUG
-      - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      # Using braces ${} ensures the variable is interpreted correctly by the shell
+      - docker push ${REPOSITORY_URI}:latest
+      - docker push ${REPOSITORY_URI}:${IMAGE_TAG}
+      - echo Writing image definitions file...
+      - printf '[{"name":"finsecure","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json
