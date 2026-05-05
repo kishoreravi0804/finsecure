@@ -33,4 +33,4 @@ phases:
       - printf '[{"name":"finsecure","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
   files:
-   -finsecure/imagedefinitions.json
+   - imagedefinitions.json
