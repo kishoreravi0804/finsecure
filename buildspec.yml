@@ -17,20 +17,18 @@ phases:
       - cd finsecure
       - chmod +x mvnw
       - ./mvnw clean package -DskipTests
-      
       - echo Building Docker image...
-      # Build and tag in one go to ensure the local daemon registers it correctly
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
       - echo Pushing Docker images...
-      # Using braces ${} ensures the variable is interpreted correctly by the shell
       - docker push ${REPOSITORY_URI}:latest
       - docker push ${REPOSITORY_URI}:${IMAGE_TAG}
       - echo Writing image definitions file...
-      - printf '[{"name":"finsecure","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"finsecure","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > ../imagedefinitions.json
+
 artifacts:
   files:
-   - imagedefinitions.json
+    - imagedefinitions.json
